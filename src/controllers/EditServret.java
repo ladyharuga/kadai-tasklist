@@ -1,7 +1,6 @@
 package controllers;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.servlet.RequestDispatcher;
@@ -15,16 +14,16 @@ import models.Task;
 import utils.DBUtil;
 
 /**
- * Servlet implementation class IndexServret
+ * Servlet implementation class EditServret
  */
-@WebServlet("/index")
-public class IndexServret extends HttpServlet {
+@WebServlet("/edit")
+public class EditServret extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public IndexServret() {
+    public EditServret() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -35,16 +34,20 @@ public class IndexServret extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = DBUtil.createEntityManager();
 
-        List<Task> tasks = em.createNamedQuery("getAllTasks", Task.class)
-                                   .getResultList();
+        // 該当のIDのタスク1件のみをデータベースから取得
+        Task m = em.find(Task.class, Integer.parseInt(request.getParameter("id")));
 
         em.close();
 
-        request.setAttribute("tasks", tasks);
+        // タスク情報とセッションIDをリクエストスコープに登録
+        request.setAttribute("tasks", m);
+        request.setAttribute("_token", request.getSession().getId());
 
-        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
+        // タスクIDをセッションスコープに登録
+        request.getSession().setAttribute("task_id", m.getId());
+
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/edit.jsp");
         rd.forward(request, response);
-
     }
 
 }
